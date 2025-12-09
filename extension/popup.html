@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            width: 300px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 10px;
+        }
+
+        h2 {
+            color: #2c3e50;
+            font-size: 18px;
+            margin-top: 0;
+        }
+
+        .product-info {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .price {
+            font-size: 24px;
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+
+        .btn.wait {
+            background: #e67e22;
+        }
+
+        .prediction {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .loader {
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>PriceHawk 🦅</h2>
+
+    <div id="loader" class="loader">Analyzing...</div>
+
+    <div id="content">
+        <div class="product-info">
+            <div id="productName">Loading...</div>
+            <div id="currentPrice" class="price"></div>
+        </div>
+
+        <!-- Instant comparison result block -->
+        <div id="compareResult" class="prediction" style="display:none">
+            <strong>Best Deal:</strong> <span id="bestPlatform"></span>
+            <br>
+            <small>Difference: ₹<span id="difference"></span></small>
+        </div>
+
+        <button id="compareBtn" class="btn" style="background:#8e44ad;">Compare Price Instantly</button>
+        <button id="trackBtn" class="btn">Track This Product</button>
+        <button id="dashboardBtn" class="btn" style="background: #34495e;">Open Dashboard</button>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+
+</html>

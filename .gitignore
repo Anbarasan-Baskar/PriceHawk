@@ -1,0 +1,27 @@
+    # OS
+Thumbs.db
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+.editorconfig
+
+# Python / AI
+__pycache__/
+*.py[cod]
+venv/
+.env
+
+# Java / Spring Boot
+target/
+*.class
+.mvn/
+mvnw
+mvnw.cmd

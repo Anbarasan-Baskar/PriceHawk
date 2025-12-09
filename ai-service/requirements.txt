@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+playwright
+beautifulsoup4
+numpy
+pandas
+scikit-learn
+tensorflow
+torch
+nltk
+apscheduler
+requests
+mysql-connector-python
+python-multipart
