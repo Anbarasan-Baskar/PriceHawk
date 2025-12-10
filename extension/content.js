@@ -28,11 +28,18 @@ function extractData() {
                   || null;
 
         name = document.querySelector("#productTitle")?.innerText?.trim();
+        let priceText =
+            document.querySelector("#corePrice_feature_div span.a-offscreen")?.innerText ||
+            document.querySelector(".a-price-whole")?.innerText;
 
-        price =
-            document.querySelector("#corePrice_feature_div span.a-offscreen")?.innerText?.replace(/[^0-9]/g, "") ||
-            document.querySelector(".a-price-whole")?.innerText?.replace(/[^0-9]/g, "");
+        if (priceText) {
+            // Remove ₹ and commas, KEEP decimal point
+            priceText = priceText.replace(/[₹,]/g, "").trim();  // "589.00" -> "589.00"
+            const parsed = parseFloat(priceText);
+            price = Number.isNaN(parsed) ? null : parsed;
+        }
 
+        
         imageUrl =
             document.querySelector("#landingImage")?.src ||
             document.querySelector("#imgTagWrapperId img")?.src;

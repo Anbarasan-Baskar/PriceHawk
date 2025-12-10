@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 document.getElementById("trackBtn").addEventListener("click", () => {
+    
     if (!extractedData) {
         alert("No data available to track.");
         return;
@@ -46,6 +47,7 @@ document.getElementById("trackBtn").addEventListener("click", () => {
             }
 
             if (response?.success) {
+                document.getElementById("trackBtn").innerText = "Tracking...";
                 alert("Tracking Enabled!");
             } else {
                 alert("Tracking Failed.");
