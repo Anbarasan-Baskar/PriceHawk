@@ -35,7 +35,7 @@ public class Product {
     private String productUrl;
 
     @Column(name = "current_price")
-    private BigDecimal currentPrice;
+    private Integer currentPrice;
 
     private Double rating;
 

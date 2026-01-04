@@ -57,13 +57,29 @@ document.getElementById("trackBtn").addEventListener("click", () => {
 });
 
 document.getElementById("compareBtn").addEventListener("click", () => {
-    fetch(`http://localhost:8080/api/compare?platform=${data.platform}&platformId=${data.platformId}`)
-        .then(res => res.json())
-        .then(compare => {
+
+    chrome.runtime.sendMessage(
+        {
+            action: "compareProduct",
+            data: {
+                platform: extractedData.platform,
+                platformId: extractedData.platformId
+            }
+        },
+        (response) => {
+            if (!response || !response.success) {
+                console.error("Compare error:", response?.error);
+                return;
+            }
+
+            const compare = response.result;
+
             document.getElementById("compareResult").style.display = "block";
             document.getElementById("bestPlatform").innerText = compare.best;
             document.getElementById("difference").innerText = compare.difference;
-        })
-        .catch(err => console.error("Compare error:", err));
+        }
+    );
+
 });
+
 

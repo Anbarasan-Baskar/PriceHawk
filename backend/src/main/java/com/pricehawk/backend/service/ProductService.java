@@ -23,6 +23,11 @@ public class ProductService {
     public List<Product> getAllTrackedProducts() {
         return productRepository.findByIsTrackedTrue();
     }
+     public Product findByPlatformAndPlatformId(String platform, String platformId) {
+        return productRepository
+                .findByPlatformIdAndPlatform(platformId, platform)
+                .orElse(null);
+    }
 
     public Optional<Product> getProductById(Long id) {
         return productRepository.findById(id);

@@ -10,4 +10,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByIsTrackedTrue();
     // For fuzzy search if needed later
     List<Product> findByNameContainingIgnoreCase(String name);
+    
 }

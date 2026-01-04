@@ -22,7 +22,7 @@ public class PriceHistory {
     private Product product;
 
     @Column(nullable = false)
-    private BigDecimal price;
+    private Integer price;
 
     @Column(name = "recorded_at")
     private LocalDateTime recordedAt;

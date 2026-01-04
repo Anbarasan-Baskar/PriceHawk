@@ -8,7 +8,7 @@ public class ScrapeResult {
     private String platformId;
     private String platform;
     private String name;
-    private BigDecimal currentPrice;
+    private Integer currentPrice;
     private String imageUrl;
     private String productUrl;
     private Double rating;

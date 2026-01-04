@@ -1,7 +1,7 @@
 package com.pricehawk.backend.controller;
 
 import com.pricehawk.backend.entity.Product;
-import com.pricehawk.backend.service.ProductComparisonService;
+import com.pricehawk.backend.service.CompareService;
 import com.pricehawk.backend.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +16,7 @@ public class ProductController {
 
     @Autowired
     private ProductService productService;
-
-    @Autowired
-    private ProductComparisonService comparisonService;
-
+    
     @GetMapping
     public List<Product> getAllProducts() {
         return productService.getAllTrackedProducts();
@@ -37,10 +34,5 @@ public class ProductController {
         return productService.saveOrUpdateProduct(product);
     }
 
-    @GetMapping("/{id}/best-deal")
-    public ResponseEntity<Product> getBestDeal(@PathVariable Long id) {
-        return productService.getProductById(id)
-                .map(p -> ResponseEntity.ok(comparisonService.compareAndGetBestDeal(p)))
-                .orElse(ResponseEntity.notFound().build());
-    }
+   
 }
