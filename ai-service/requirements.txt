@@ -12,3 +12,6 @@ apscheduler
 requests
 mysql-connector-python
 python-multipart
+black
+isort
+pre-commit

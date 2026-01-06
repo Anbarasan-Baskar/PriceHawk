@@ -1,28 +1,16 @@
 package com.pricehawk.backend.payload.response;
 
+import lombok.Data;
+import java.util.List;
 import java.util.Map;
 
+@Data
 public class CompareResponse {
 
-    private String best;
-    private double difference;
-    private Map<String, Double> prices;
+    private String bestPlatform;
+    private double bestPrice;
+    private String bestTitle;
+    private double confidence;
+    private List<Map<String,Object>> results;
 
-    public CompareResponse(String best, double difference, Map<String, Double> prices) {
-        this.best = best;
-        this.difference = difference;
-        this.prices = prices;
-    }
-
-    public String getBest() {
-        return best;
-    }
-
-    public double getDifference() {
-        return difference;
-    }
-
-    public Map<String, Double> getPrices() {
-        return prices;
-    }
 }

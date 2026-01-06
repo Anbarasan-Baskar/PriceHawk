@@ -1,7 +1,6 @@
 package com.pricehawk.backend.controller;
 
 import com.pricehawk.backend.entity.Product;
-import com.pricehawk.backend.service.CompareService;
 import com.pricehawk.backend.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
