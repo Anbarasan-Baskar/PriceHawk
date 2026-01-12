@@ -3,7 +3,7 @@ import sys
 import traceback
 from difflib import SequenceMatcher
 from playwright.sync_api import sync_playwright
-from normalize import normalize_title
+from normalize import normalize_title, normalize_for_search
 
 def similarity(a, b):
     if not a or not b:
@@ -23,7 +23,8 @@ def clean_price(text):
 
 def search_amazon(query):
     norm_query = normalize_title(query)
-    url = f"https://www.amazon.in/s?k={query.replace(' ', '+')}"
+    search_q = normalize_for_search(query)
+    url = f"https://www.amazon.in/s?k={search_q.replace(' ', '+')}"
     print("Amazon Search URL:", url)
 
     with sync_playwright() as p:
@@ -79,7 +80,7 @@ def search_amazon(query):
 
                 image = it.locator("img.s-image").first.get_attribute("src")
 
-                print("TITLE:", title[:50], "| PRICE RAW:", price)
+                print("TITLE:", normalize_title(title), "| PRICE RAW:", price)
 
                 results.append({
                     "platform": "AMAZON",
@@ -112,7 +113,8 @@ def search_amazon(query):
 
 def search_flipkart(query):
     norm_query = normalize_title(query)
-    url = f"https://www.flipkart.com/search?q={query.replace(' ', '+')}"
+    search_q = normalize_for_search(query)
+    url = f"https://www.flipkart.com/search?q={search_q.replace(' ', '+')}"
     print("Flipkart Search URL:", url)
 
     with sync_playwright() as p:
@@ -170,10 +172,10 @@ if __name__ == "__main__":
 
     q = " ".join(sys.argv[1:])
     print(">>> Searching Amazon for:", q)
-   # print(">>> Searching Flipkart for:", q)
+    print(">>> Searching Flipkart for:", q)
     try:
         res = search_amazon(q)
-        #res = search_flipkart(q)
+        res = search_flipkart(q)
         print("Results:", len(res))
 
         if res:

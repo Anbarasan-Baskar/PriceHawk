@@ -50,12 +50,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
    
     if (request.action === "compareProduct") {
 
-     fetch("http://localhost:8080/api/compare/instant?title=" + encodeURIComponent(req.title))
-            .then(res => res.json())
-            .then(sendResponse);
+        fetch("http://localhost:8080/api/compare/instant?title=" + encodeURIComponent(request.data.title))
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
+            .then((result) => sendResponse({ success: true, result }))
+            .catch((err) => sendResponse({ success: false, error: err.toString() }));
 
-        return true;
-}
+        return true; // keep message channel open
+    }
 
 
 

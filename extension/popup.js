@@ -58,28 +58,85 @@ document.getElementById("trackBtn").addEventListener("click", () => {
 
 document.getElementById("compareBtn").addEventListener("click", () => {
 
+    if (!extractedData) {
+        alert("No data available to compare.");
+        return;
+    }
+
+    document.getElementById('loader').style.display = 'block';
+
     chrome.runtime.sendMessage(
         {
             action: "compareProduct",
             data: {
+                title: extractedData.title || extractedData.name,
                 platform: extractedData.platform,
                 platformId: extractedData.platformId
             }
         },
         (response) => {
+            document.getElementById('loader').style.display = 'none';
+
             if (!response || !response.success) {
                 console.error("Compare error:", response?.error);
+                alert('Comparison failed.');
                 return;
             }
 
             const compare = response.result;
-
-            document.getElementById("compareResult").style.display = "block";
-            document.getElementById("bestPlatform").innerText = compare.best;
-            document.getElementById("difference").innerText = compare.difference;
+            renderCompareResults(compare.platforms || {});
         }
     );
 
 });
+
+function renderCompareResults(platforms) {
+    const container = document.getElementById('platformResults');
+    container.innerHTML = '';
+
+    Object.entries(platforms).forEach(([platform, data]) => {
+        const platDiv = document.createElement('div');
+        platDiv.style.borderTop = '1px solid #eee';
+        platDiv.style.paddingTop = '8px';
+
+        const title = document.createElement('div');
+        title.style.fontWeight = 'bold';
+        title.innerText = platform;
+        platDiv.appendChild(title);
+
+        const list = (data && data.best) ? data.best : [];
+
+        if (!list.length) {
+            const none = document.createElement('div');
+            none.innerText = 'No matches found.';
+            platDiv.appendChild(none);
+        } else {
+            list.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.style.marginTop = '6px';
+
+                const name = document.createElement('div');
+                name.innerText = (item.name || item.title || '').substring(0, 80);
+                itemDiv.appendChild(name);
+
+                const price = document.createElement('div');
+                price.innerHTML = `<span style="font-weight:bold;color:#27ae60">₹${item.price}</span>` + (item.is_lowest ? ' <small style="color:#e67e22">— Lowest</small>' : '');
+                itemDiv.appendChild(price);
+
+                const link = document.createElement('a');
+                link.href = item.productUrl || item.url || '#';
+                link.target = '_blank';
+                link.innerText = 'View';
+                itemDiv.appendChild(link);
+
+                platDiv.appendChild(itemDiv);
+            });
+        }
+
+        container.appendChild(platDiv);
+    });
+
+    document.getElementById('compareResult').style.display = 'block';
+}
 
 

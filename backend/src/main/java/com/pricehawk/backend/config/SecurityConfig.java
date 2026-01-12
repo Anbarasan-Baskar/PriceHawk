@@ -83,7 +83,7 @@ public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSou
     org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
     configuration.setAllowedOrigins(List.of(
             "http://localhost:4200",
-            "chrome-extension://jnjoclebpmbcdjjnemobmbaabeildgfa"
+            "chrome-extension://ejgedmkcicmgmnfejfgiclgdlaloeajh"
     ));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(List.of("*"));

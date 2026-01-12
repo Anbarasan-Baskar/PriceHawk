@@ -14,9 +14,6 @@ public class PriceHawkApplication {
 		SpringApplication.run(PriceHawkApplication.class, args);
 	}
 
-	@Bean
-	public RestTemplate restTemplate() {
-		return new RestTemplate();
-	}
+	
 
 }
