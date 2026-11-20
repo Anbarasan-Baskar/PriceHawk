@@ -1,37 +1,49 @@
-<div class="container">
-  <h2>Tracked Products</h2>
+<main class="dashboard">
+  <header class="dashboard-header">
+    <div>
+      <p class="eyebrow">PriceHawk / Overview</p>
+      <h1>Your products</h1>
+      <p class="subtitle">Keep an eye on prices and compare offers in one place.</p>
+    </div>
+    <span class="product-count">{{ products.length }} products</span>
+  </header>
 
-  <div class="product-grid">
-    <div *ngFor="let product of products" class="product-card">
-      
-      <img [src]="product.imageUrl" alt="{{product.name}}" class="product-img">
+  <section *ngIf="products.length; else emptyState" class="product-grid" aria-label="Products">
+    <article *ngFor="let product of products" class="product-card">
+      <div class="image-frame">
+        <img [src]="product.imageUrl" [alt]="product.name || 'Product image'" class="product-img">
+      </div>
 
-      <h3 class="title">{{ product.name }}</h3>
-
-      <p class="price">
-        ₹{{ product.currentPrice }} 
-        <span class="platform">({{ product.platform }})</span>
-      </p>
-
-      <p class="rating">
-        ★ {{ product.rating || 'NA' }} | {{ product.reviewCount || 0 }} reviews
-      </p>
+      <div class="product-info">
+        <h2 class="title">{{ product.name }}</h2>
+        <div class="price-row">
+          <span class="price">₹{{ product.currentPrice }}</span>
+          <span class="platform">{{ product.platform }}</span>
+        </div>
+        <p class="rating">
+          <span class="rating-star" aria-hidden="true">★</span>
+          {{ product.rating || 'NA' }} · {{ product.reviewCount || 0 }} reviews
+        </p>
+      </div>
 
       <div class="actions">
-        <button 
-          [routerLink]="['/history', product.id]" 
-          class="btn-chart">View Chart</button>
-
-        <button 
-          [routerLink]="['/compare', product.id]" 
-          class="btn-compare">Compare</button>
-
-        <button 
-          (click)="toggleTrack(product)" 
-          class="btn-watch">
-            {{ product.isTracked ? 'Untrack' : 'Track' }}
+        <button [routerLink]="['/history', product.id]" class="btn-chart" type="button">Price history</button>
+        <button [routerLink]="['/compare', product.id]" class="btn-compare" type="button">Compare</button>
+        <button
+          (click)="toggleTrack(product)"
+          [class.is-tracked]="product.isTracked"
+          class="btn-watch"
+          type="button">
+          {{ product.isTracked ? 'Untrack product' : 'Track product' }}
         </button>
       </div>
-    </div>
-  </div>
-</div>
+    </article>
+  </section>
+
+  <ng-template #emptyState>
+    <section class="empty-state">
+      <strong>No products yet</strong>
+      Products you track will appear here.
+    </section>
+  </ng-template>
+</main>

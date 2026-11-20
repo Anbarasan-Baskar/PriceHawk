@@ -1,68 +1,61 @@
-def pick_best(results,
-                             min_confidence=0.35,
-                             max_results_per_platform=5):
-    """
-    results: list of dicts produced by search_* functions
-    returns: dict grouped by platform with filtered, normalized candidates.
+from collections import defaultdict
+import math
+import re
 
-    For each platform we return a simple list (max 5) of candidates sorted by
-    confidence desc then price asc. This service's responsibility is ONLY to
-    scrape, normalize and return candidates — all comparison/selection logic
-    (best/lowest selection) must be performed in the Spring backend.
-    """
 
+def _to_confidence(value) -> float:
+    if value is None or isinstance(value, bool):
+        return 0.0
+    try:
+        val = float(value)
+        return val if math.isfinite(val) else 0.0
+    except (ValueError, TypeError):
+        return 0.0
+
+
+def pick_best(
+    results: list[dict],
+    min_confidence: float = 0.35,
+    max_results_per_platform: int = 5,
+) -> dict:
     if not results:
         return {"error": "no results", "platforms": {}}
 
-    grouped = {}
-
-    # group by platform
+    grouped = defaultdict(list)
     for r in results:
-        platform = r.get("platform", "UNKNOWN")
-
-        if platform not in grouped:
-            grouped[platform] = []
-
+        platform = str(r.get("platform") or "UNKNOWN").upper()
         grouped[platform].append(r)
 
     final_output = {}
 
     for platform, items in grouped.items():
-
-        # 1) filter garbage & normalize numeric fields
         valid = []
-        for i in items:
-            price = i.get("price")
-            confidence = i.get("confidence", 0)
+        seen_keys = set()
 
-            # normalize price to float if possible
-            try:
-                if price is not None and not isinstance(price, (int, float)):
-                    price = float(str(price).replace(',', '').strip())
-                i["price"] = float(price) if price is not None else None
-            except Exception:
-                i["price"] = None
+        for raw in items:
 
-            try:
-                i["confidence"] = float(confidence)
-            except Exception:
-                i["confidence"] = 0.0
+            confidence = _to_confidence(raw.get("confidence", 0.0))
 
-            if i["price"] is not None and i["confidence"] >= min_confidence:
-                valid.append(i)
+            if confidence < min_confidence:
+                continue
 
-        if not valid:
-            final_output[platform] = []
-            continue
+            dedupe_key = (
+                raw.get("platformId")
+                or raw.get("pid")
+                or raw.get("productUrl")
+                or raw.get("url")
+            )
+            if dedupe_key:
+                if dedupe_key in seen_keys:
+                    continue
+                seen_keys.add(dedupe_key)
 
-        # sort: confidence desc, then price asc
-        valid.sort(
-            key=lambda x: (-x["confidence"], x["price"] if x["price"] is not None else 10**9)
-        )
+            item = dict(raw)
+            item["platform"] = platform
+            item["confidence"] = confidence
+            valid.append(item)
 
-        # take up to N candidates
+        valid.sort(key=lambda x: (-x["confidence"], x["price"]))
         final_output[platform] = valid[:max_results_per_platform]
 
-    return {
-        "platforms": final_output
-    }
+    return {"platforms": final_output}

@@ -1,4 +1,3 @@
-
 package com.pricehawk.backend.controller;
 
 import com.pricehawk.backend.service.CompareService;
@@ -19,8 +18,10 @@ public class CompareController {
     }
 
     @GetMapping("/instant")
-    public ResponseEntity<Map<String, Object>> compare(@RequestParam String title) {
-        Map<String, Object> result = service.compareByTitle(title);
+    public ResponseEntity<Map<String, Object>> compare(
+            @RequestParam String title,
+            @RequestParam(required = false) Long productId) {
+        Map<String, Object> result = service.compareByTitle(title, productId);
         if (result == null || result.isEmpty()) {
             return ResponseEntity.noContent().build();
         }

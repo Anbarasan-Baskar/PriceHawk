@@ -29,10 +29,11 @@ import { Chart } from 'chart.js/auto';
         <canvas id="priceHistoryChart"></canvas>
       </div>
       
-      <div class="ai-prediction">
+      <div class="ai-prediction" *ngIf="prediction">
         <h3>AI Prediction</h3>
-        <!-- Prediction content would go here -->
-        <p>Confidence: High</p>
+        <p><strong>Trend:</strong> {{ prediction.trend }}</p>
+        <p><strong>Confidence:</strong> {{ prediction.confidence }}</p>
+        <p *ngIf="prediction.price"><strong>Forecast Price:</strong> ₹{{ prediction.price }}</p>
       </div>
     </div>
   `,
@@ -46,6 +47,7 @@ import { Chart } from 'chart.js/auto';
 export class ProductComparisonComponent implements OnInit {
     product: any;
     bestDeal: any;
+    prediction: any;
     chart: any;
 
     constructor(
@@ -64,6 +66,9 @@ export class ProductComparisonComponent implements OnInit {
             this.product = data;
             this.apiService.getBestDeal(id).subscribe(deal => {
                 this.bestDeal = deal;
+            });
+            this.apiService.getPrediction(id).subscribe(pred => {
+                this.prediction = pred;
             });
         });
     }

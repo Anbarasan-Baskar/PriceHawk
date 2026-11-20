@@ -1,12 +1,14 @@
 package com.pricehawk.backend.controller;
 
+import com.pricehawk.backend.payload.request.PredictionRequest;
+import com.pricehawk.backend.payload.request.PriceHistoryPoint;
+import com.pricehawk.backend.payload.response.PredictionResponse;
 import com.pricehawk.backend.service.AIClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import java.util.Map;
-import java.util.List;
-import java.util.Collections;
+
 import java.util.ArrayList;
+import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -17,27 +19,20 @@ public class AIController {
     private AIClientService aiClientService;
 
     @PostMapping("/predict")
-    public Map<String, Object> predictPrice(@RequestBody Map<String, Object> payload) {
-        // Payload from extension: { price: "999", history: [] }
-        // We need to adapt it for the AI service if necessary, or just pass it through.
-
+    public PredictionResponse predictPrice(@RequestBody PredictionRequest payload) {
         try {
-            double currentPrice = Double.parseDouble(payload.get("price").toString());
-            List<Map<String, Object>> history = (List<Map<String, Object>>) payload.get("history");
+            double currentPrice = payload.getPrice();
+            List<PriceHistoryPoint> history = payload.getHistory();
 
             if (history == null || history.isEmpty()) {
-                // If no history provided, create a dummy history point for now to avoid AI
-                // error
-                // In a real scenario, we would fetch history from our DB
-                Map<String, Object> point = Map.of("price", currentPrice, "date", java.time.LocalDate.now().toString());
                 history = new ArrayList<>();
-                history.add(point);
+                history.add(new PriceHistoryPoint(currentPrice, java.time.LocalDate.now().toString()));
             }
 
             return aiClientService.getPrediction(currentPrice, history);
 
         } catch (Exception e) {
-            return Map.of("error", "Invalid data format");
+            return PredictionResponse.error("Invalid data format");
         }
     }
 }

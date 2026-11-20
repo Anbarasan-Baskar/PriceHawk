@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../services/api.service';
+import { ProductTrackingService } from '../../services/product-tracking.service';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -13,7 +14,10 @@ import { RouterModule } from '@angular/router';
 export class DashboardComponent implements OnInit {
     products: any[] = [];
 
-    constructor(private apiService: ApiService) {}
+    constructor(
+        private apiService: ApiService,
+        private productTrackingService: ProductTrackingService
+    ) {}
 
     ngOnInit(): void {
         this.loadProducts();
@@ -29,10 +33,15 @@ export class DashboardComponent implements OnInit {
     }
 
     toggleTrack(product: any) {
-        product.isTracked = !product.isTracked;
-
-        this.apiService.updateTrackStatus(product).subscribe({
-            next: () => console.log("Tracking Updated"),
+        const isTracked = !product.isTracked;
+        this.productTrackingService.setTracked({
+            platformId: product.platformId,
+            platform: product.platform,
+            isTracked
+        }).subscribe({
+            next: (updatedProduct) => {
+                product.isTracked = updatedProduct.isTracked;
+            },
             error: (err) => console.error(err)
         });
     }

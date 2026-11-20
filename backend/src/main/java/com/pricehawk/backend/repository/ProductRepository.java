@@ -7,8 +7,14 @@ import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<Product> findByPlatformIdAndPlatform(String platformId, String platform);
+
     List<Product> findByIsTrackedTrue();
+
     // For fuzzy search if needed later
     List<Product> findByNameContainingIgnoreCase(String name);
-    
+
+    List<Product> findByGroupId(String groupId);
+
+    Optional<Product> findByPlatformIgnoreCaseAndPlatformId(String platform, String platformId);
+
 }

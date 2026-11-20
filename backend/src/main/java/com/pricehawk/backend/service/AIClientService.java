@@ -1,11 +1,13 @@
 package com.pricehawk.backend.service;
 
+import com.pricehawk.backend.payload.request.PredictionRequest;
+import com.pricehawk.backend.payload.request.PriceHistoryPoint;
+import com.pricehawk.backend.payload.response.PredictionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.http.ResponseEntity;
-import java.util.Map;
-import java.util.HashMap;
+
 import java.util.List;
 
 @Service
@@ -14,24 +16,21 @@ public class AIClientService {
     @Autowired
     private RestTemplate restTemplate;
 
-    private final String AI_SERVICE_URL = "http://localhost:8000";
+    @Value("${ai.service.url:http://localhost:8000}")
+    private String aiServiceUrl;
 
-    public Map<String, Object> getPrediction(double currentPrice, List<Map<String, Object>> history) {
-        String url = AI_SERVICE_URL + "/predict/price";
+    public PredictionResponse getPrediction(double currentPrice, List<PriceHistoryPoint> history) {
+        String url = aiServiceUrl + "/predict/price";
 
-        Map<String, Object> request = new HashMap<>();
-        request.put("history", history); // AI expects list of {price, date}
+        PredictionRequest request = new PredictionRequest();
+        request.setHistory(history);
 
         try {
-            return restTemplate.postForObject(url, request, Map.class);
+            PredictionResponse response = restTemplate.postForObject(url, request, PredictionResponse.class);
+            return response != null ? response : PredictionResponse.fallback(currentPrice);
         } catch (Exception e) {
             e.printStackTrace();
-            // Fallback response if AI is down
-            Map<String, Object> fallback = new HashMap<>();
-            fallback.put("predicted_price", currentPrice);
-            fallback.put("confidence_score", 0.0);
-            fallback.put("trend", "UNKNOWN");
-            return fallback;
+            return PredictionResponse.fallback(currentPrice);
         }
     }
 }

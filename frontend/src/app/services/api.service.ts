@@ -10,12 +10,6 @@ const PRODUCT_API = environment.apiUrl + '/products';
     providedIn: 'root'
 })
 export class ApiService {
-    updateTrackStatus(product: any) {
-        return this.http.patch(`http://localhost:8080/api/products/${product.id}/track`, {
-            isTracked: product.isTracked
-        });
-    }
-
     constructor(private http: HttpClient) { }
 
     login(credentials: any): Observable<any> {
@@ -45,5 +39,9 @@ export class ApiService {
 
     getPriceHistory(productId: number): Observable<any> {
         return this.http.get(environment.apiUrl + '/history/' + productId);
+    }
+
+    getPrediction(id: any): Observable<any> {
+        return this.http.get(PRODUCT_API + '/' + id + '/predict');
     }
 }

@@ -1,0 +1,181 @@
+PriceHawk Interview Questions and Answers
+=========================================
+
+1. Tell me about your project.
+
+Answer:
+PriceHawk is an intelligent shopping assistant that helps users track products, compare prices across platforms, view price history, and get buying recommendations.
+
+The project includes a Chrome extension, Angular frontend, Spring Boot backend, MySQL database, and Python FastAPI service. The Chrome extension extracts product details from Amazon or Flipkart pages. The backend stores products and price history, handles authentication, and communicates with the AI/scraping service. The frontend displays tracked products, comparison results, and price history charts.
+
+
+2. What tech stack did you use?
+
+Answer:
+I used Angular 18 for the frontend, Spring Boot with Java 21 for the backend, MySQL for the database, Python FastAPI for scraping and comparison logic, Playwright for scraping, Chrome Manifest V3 for the browser extension, JWT for authentication, BCrypt for password hashing, and Chart.js for price history visualization.
+
+
+3. What problem does PriceHawk solve?
+
+Answer:
+PriceHawk solves the problem of manually checking prices across multiple e-commerce websites. Users can track a product, compare prices, view price history, and decide whether to buy now or wait.
+
+
+4. Explain the architecture of your project.
+
+Answer:
+The architecture has four main layers:
+
+Client layer:
+Chrome extension and Angular dashboard.
+
+Backend layer:
+Spring Boot REST API for authentication, products, watchlist, price history, and comparison.
+
+Data layer:
+MySQL database for users, products, watchlist, and price history.
+
+AI/scraping layer:
+Python FastAPI service with Playwright scraping and comparison logic.
+
+The backend acts as the main coordinator between the frontend, extension, database, and Python service.
+
+
+5. What was one major challenge you faced?
+
+Answer:
+One major challenge was handling dynamic DOM changes on e-commerce websites like Flipkart and Amazon. Their CSS classes and page structure change frequently, so relying only on DOM selectors made the scraper fragile.
+
+To solve this, I used JSON-LD structured data from the page source. Many product pages expose product details like name, price, image, rating, and review count inside application/ld+json scripts. I used JSON-LD as the primary extraction method and kept DOM selectors as fallback logic.
+
+This made the scraper more reliable because even if the visible UI changed, the structured metadata often remained stable.
+
+
+6. How does product tracking work?
+
+Answer:
+When the user opens a supported product page, the Chrome extension content script extracts details like product name, price, image, rating, platform, platform ID, and product URL. The extension sends this data to the backend endpoint /api/scrape/update.
+
+The backend checks whether the product already exists using platform ID and platform. If it exists, the product is updated. If the price changed, a new price history record is inserted. If the product does not exist, it is saved as a new product with an initial price history entry.
+
+
+7. How does price comparison work?
+
+Answer:
+The user sends product details to the backend endpoint /api/compare/instant. The Spring Boot backend normalizes the payload and forwards it to the Python FastAPI service.
+
+The Python service searches supported platforms, normalizes product titles, calculates confidence scores, and returns candidate products. The backend then filters low-confidence results, selects top matches, and marks the lowest-priced item.
+
+
+8. How did you manage storage in your project?
+
+Answer:
+I used MySQL as the main persistent storage. I designed separate tables for users, products, price history, and watchlist.
+
+The products table stores current product data such as platform ID, platform, name, price, rating, image URL, and tracking status. I used a unique constraint on platform_id and platform to avoid duplicate products.
+
+The price_history table stores historical prices instead of overwriting old values. Whenever a tracked product price changes, a new record is inserted. This supports price trend charts and future prediction features.
+
+The watchlist table maps users to tracked products and stores target prices for alerts.
+
+
+9. Did you use caching in your project?
+
+Answer:
+In the current version, I focused more on persistence and real-time freshness because product prices are time-sensitive. I did not implement a full Redis or Spring Cache layer yet.
+
+However, caching would be useful for comparison results and scraper responses. For example, if multiple users search for the same product title within a short time, the normalized comparison result can be cached for 5 to 15 minutes. The cache key could be based on normalized product title and platform.
+
+In production, I would use Redis or Spring Cache with TTL-based invalidation to reduce repeated scraping and improve performance.
+
+
+10. How did authentication and token handling work?
+
+Answer:
+PriceHawk uses JWT-based authentication. During signup, the user's password is hashed using BCrypt and stored in the database. During login, Spring Security authenticates the user and the backend generates a JWT token.
+
+The client sends this token in the Authorization header as:
+
+Authorization: Bearer <token>
+
+For protected APIs, the JWT filter validates the token, extracts the user's email, loads the user details, and sets authentication in the Spring Security context.
+
+
+11. What is the difference between password hashing and token generation in your project?
+
+Answer:
+Password hashing and token generation serve different purposes.
+
+Password hashing is used during signup and login. The password is hashed using BCrypt before storing it in the database. This protects the original password.
+
+JWT token generation happens after successful login. The token represents the authenticated session and is sent with future requests. The token helps the backend identify the logged-in user without storing session data on the server.
+
+
+12. How did you handle errors in your project?
+
+Answer:
+I handled errors at multiple levels.
+
+In the backend, I used ResponseEntity and try-catch blocks. For example, if the AI service fails during comparison, the backend catches the exception and returns a structured error response with an empty platforms object instead of crashing.
+
+For prediction, if the AI service is unavailable, the backend returns a fallback response.
+
+In the Chrome extension, I handled chrome.runtime.lastError for messaging failures and showed error messages when extraction, tracking, or comparison failed.
+
+In the scraper, I used fallback strategies. JSON-LD is used first, and DOM selectors are used only if structured data is missing.
+
+
+13. Did you use Spring Boot error handling?
+
+Answer:
+Yes, but mainly in a basic service-level and controller-level way.
+
+I used ResponseEntity, try-catch blocks, and fallback responses. For example, in the comparison flow, if the AI service call fails, the service catches the exception and returns a structured error response. In controllers, I used responses like notFound, badRequest, noContent, and internalServerError depending on the situation.
+
+I did not implement a centralized @RestControllerAdvice yet. That would be my next improvement because it would allow all API errors to follow a consistent JSON format.
+
+
+14. How would you improve Spring Boot error handling?
+
+Answer:
+I would add a global exception handler using @RestControllerAdvice. This would centralize common errors such as product not found, validation failure, authentication failure, AI service unavailable, and database errors.
+
+I would return a consistent error response containing fields like timestamp, status, message, path, and error code.
+
+This would make the API cleaner and easier for the frontend and extension to handle.
+
+
+15. What are the limitations of the project?
+
+Answer:
+The main limitation is that scraping can break if e-commerce platforms change their structure. I reduced this risk by using JSON-LD first and DOM selectors as fallback.
+
+Another limitation is that the AI prediction feature is currently more of a prototype or fallback logic rather than a fully trained production model.
+
+Also, some security and CORS settings are relaxed for development and demo purposes. In production, I would move secrets to environment variables, restrict public endpoints, improve CORS, and add centralized error handling.
+
+
+16. What would you improve next?
+
+Answer:
+I would improve the project in these areas:
+
+Add Redis or Spring Cache for short-term comparison caching.
+
+Add @RestControllerAdvice for centralized Spring Boot error handling.
+
+Improve product matching using model number extraction or embeddings.
+
+Train a real price prediction model using historical price data.
+
+Add a complete email or notification scheduler for target price alerts.
+
+Strengthen security by protecting more endpoints and storing tokens more safely.
+
+
+17. Short final summary answer.
+
+Answer:
+PriceHawk is a full-stack intelligent shopping assistant. It uses a Chrome extension to extract product data, Spring Boot APIs to store and process data, MySQL for persistent storage, Python FastAPI with Playwright for scraping and comparison, and Angular for the dashboard.
+
+The main challenge was dynamic DOM changes, which I solved by using JSON-LD structured data as the primary extraction method. Storage is handled through normalized MySQL tables. JWT is used for authentication, BCrypt for password hashing, and errors are handled using ResponseEntity, try-catch blocks, fallback responses, and extension-level error checks.

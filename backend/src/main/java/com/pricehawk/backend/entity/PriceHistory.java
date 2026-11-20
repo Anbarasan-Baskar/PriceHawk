@@ -28,6 +28,8 @@ public class PriceHistory {
 
     @PrePersist
     protected void onCreate() {
-        recordedAt = LocalDateTime.now();
+        if (recordedAt == null) {
+            recordedAt = LocalDateTime.now();
+        }
     }
 }

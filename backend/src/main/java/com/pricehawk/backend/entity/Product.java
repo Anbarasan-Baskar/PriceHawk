@@ -2,8 +2,8 @@ package com.pricehawk.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -23,6 +23,9 @@ public class Product {
 
     @Column(nullable = false)
     private String platform; // "AMAZON" or "FLIPKART"
+
+    @Column(name = "group_id")
+    private String groupId;
 
     @Column(nullable = false)
     private String name;

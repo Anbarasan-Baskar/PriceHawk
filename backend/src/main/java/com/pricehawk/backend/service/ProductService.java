@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 //import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,7 +24,8 @@ public class ProductService {
     public List<Product> getAllTrackedProducts() {
         return productRepository.findByIsTrackedTrue();
     }
-     public Product findByPlatformAndPlatformId(String platform, String platformId) {
+
+    public Product findByPlatformAndPlatformId(String platform, String platformId) {
         return productRepository
                 .findByPlatformIdAndPlatform(platformId, platform)
                 .orElse(null);
@@ -33,51 +35,65 @@ public class ProductService {
         return productRepository.findById(id);
     }
 
+    public Optional<Product> getBestDeal(Long id) {
+        Optional<Product> productOpt = productRepository.findById(id);
+        if (productOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        Product product = productOpt.get();
+        if (product.getGroupId() == null || product.getGroupId().isEmpty()) {
+            return Optional.of(product);
+        }
+        List<Product> groupedProducts = productRepository.findByGroupId(product.getGroupId());
+        if (groupedProducts == null || groupedProducts.isEmpty()) {
+            return Optional.of(product);
+        }
+        return groupedProducts.stream()
+                .filter(p -> p.getCurrentPrice() != null)
+                .min(Comparator.comparing(Product::getCurrentPrice));
+    }
+
     @Transactional
+    public Optional<Product> updateTrackStatus(String platformId, String platform, Boolean isTracked) {
+        return productRepository.findByPlatformIgnoreCaseAndPlatformId(platform, platformId)
+                .map(product -> {
+                    product.setIsTracked(isTracked != null ? isTracked : true);
+                    return productRepository.save(product);
+                });
+    }
+
     public Product saveOrUpdateProduct(Product product) {
+        if (product.getPlatformId() == null || product.getPlatformId().isBlank()
+                || product.getPlatform() == null || product.getPlatform().isBlank()) {
+            throw new IllegalArgumentException("platformId and platform are required");
+        }
+
+        String platformId = product.getPlatformId().trim();
+        String platform = product.getPlatform().trim();
+
         Optional<Product> existing = productRepository
-                .findByPlatformIdAndPlatform(product.getPlatformId(), product.getPlatform());
+                .findByPlatformIgnoreCaseAndPlatformId(platform, platformId);
 
         if (existing.isPresent()) {
-            Product dbProduct = existing.get();
-
-            // Save history before the update, IF price changed
-            if (dbProduct.getCurrentPrice() != null
-                    && product.getCurrentPrice() != null
-                    && dbProduct.getCurrentPrice().compareTo(product.getCurrentPrice()) != 0) {
-
-                PriceHistory history = new PriceHistory();
-                history.setProduct(dbProduct);
-                history.setPrice(product.getCurrentPrice());
-                priceHistoryRepository.save(history);
+            Product saved = existing.get();
+            saved.setPlatformId(platformId);
+            saved.setPlatform(platform);
+            saved.setName(product.getName());
+            saved.setImageUrl(product.getImageUrl());
+            saved.setProductUrl(product.getProductUrl());
+            saved.setCurrentPrice(product.getCurrentPrice());
+            saved.setRating(product.getRating());
+            saved.setReviewCount(product.getReviewCount());
+            if (product.getIsTracked() != null) {
+                saved.setIsTracked(product.getIsTracked());
             }
-
-            // Update product fields
-            dbProduct.setCurrentPrice(product.getCurrentPrice());
-            dbProduct.setReviewCount(product.getReviewCount());
-            dbProduct.setRating(product.getRating());
-            dbProduct.setImageUrl(product.getImageUrl());
-            dbProduct.setProductUrl(product.getProductUrl());
-            dbProduct.setIsTracked(product.getIsTracked());
-
-            return productRepository.save(dbProduct);
-
-        } else {
-            // Save new product
-            product.setIsTracked(product.getIsTracked());
-
-            Product saved = productRepository.save(product);
-
-            // 🔥 Save initial history
-            if (saved.getCurrentPrice() != null) {
-                PriceHistory history = new PriceHistory();
-                history.setProduct(saved);
-                history.setPrice(saved.getCurrentPrice());
-                priceHistoryRepository.save(history);
-            }
-
-            return saved;
+            return productRepository.save(saved);
         }
+
+        product.setPlatformId(platformId);
+        product.setPlatform(platform);
+        product.setIsTracked(product.getIsTracked() != null ? product.getIsTracked() : false);
+        return productRepository.save(product);
     }
 
 }
